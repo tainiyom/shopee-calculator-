@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>คำนวณราคาขาย & ค่าธรรมเนียม Shopee</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #EEF2EA;
+    --paper: #FFFFFF;
+    --ink: #1E2A22;
+    --ink-soft: #5C6B61;
+    --ink-faint: #8C978E;
+    --brand: #E2601C;
+    --brand-dark: #A8420C;
+    --brand-tint: #FCEADD;
+    --fee: #A6321F;
+    --fee-tint: #FBE6E1;
+    --amber: #B9871C;
+    --amber-tint: #FBF1DD;
+    --line: #D7DED2;
+    --line-strong: #B7C1AF;
+    --radius: 14px;
+    --shadow: 0 1px 2px rgba(30,42,34,0.04), 0 8px 24px rgba(30,42,34,0.06);
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans Thai', 'IBM Plex Mono', sans-serif;
+    font-size:14.5px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(30,42,34,0.05) 1px, transparent 0);
+    background-size: 22px 22px;
+  }
+  .mono{ font-family:'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; }
+
+  .app{ max-width:1180px; margin:0 auto; padding:22px 18px 60px; }
+
+  /* ---------- Header ---------- */
+  .topbar{
+    display:flex; align-items:flex-end; justify-content:space-between;
+    gap:16px; flex-wrap:wrap;
+    margin-bottom:22px;
+    padding-bottom:16px;
+    border-bottom:2px solid var(--ink);
+  }
+  .brand-block{ display:flex; align-items:center; gap:12px; }
+  .brand-mark{
+    width:42px; height:42px; border-radius:10px;
+    background:var(--brand);
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-family:'IBM Plex Mono'; font-weight:700; font-size:17px;
+    flex-shrink:0;
+    box-shadow: var(--shadow);
+  }
+  .brand-text h1{ font-size:19px; margin:0 0 2px; font-weight:700; letter-spacing:-0.01em; }
+  .brand-text p{ margin:0; font-size:12.5px; color:var(--ink-soft); }
+  .rate-badge{
+    font-family:'IBM Plex Mono'; font-size:11.5px; color:var(--brand-dark);
+    background:var(--brand-tint); border:1px solid #F0C7A6;
+    padding:6px 11px; border-radius:100px; white-space:nowrap;
+  }
+  .rate-badge b{ font-weight:700; }
+
+  /* ---------- Layout ---------- */
+  .layout{
+    display:grid;
+    grid-template-columns: 1.15fr 0.95fr;
+    gap:20px;
+    align-items:start;
+  }
+  @media (max-width: 880px){
+    .layout{ grid-template-columns: 1fr; }
+  }
+
+  /* ---------- Mode toggle ---------- */
+  .mode-toggle{
+    display:grid; grid-template-columns:1fr 1fr; gap:8px;
+    background:#E2E8DD; padding:5px; border-radius:12px;
+    margin-bottom:18px;
+  }
+  .mode-btn{
+    border:none; background:transparent; cursor:pointer;
+    padding:11px 10px; border-radius:9px;
+    font-family:inherit; font-size:13.5px; font-weight:600;
+    color:var(--ink-soft);
+    transition: background .18s ease, color .18s ease, box-shadow .18s ease;
+  }
+  .mode-btn.active{
+    background:var(--paper); color:var(--ink); box-shadow:var(--shadow);
+  }
+
+  /* ---------- Card / groups ---------- */
+  .card{
+    background:var(--paper); border:1px solid var(--line);
+    border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:20px 20px 8px;
+  }
+  .group{ margin-bottom:20px; }
+  .group-title{
+    font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--ink-faint); margin-bottom:12px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .group-title::after{ content:""; flex:1; height:1px; background:var(--line); }
+
+  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+  .field-row.single{ grid-template-columns:1fr; }
+  @media (max-width:520px){ .field-row{ grid-template-columns:1fr; } }
+
+  .field label{
+    display:block; font-size:12.5px; color:var(--ink-soft); margin-bottom:6px; font-weight:500;
+  }
+  .field label .hint-inline{
+    font-family:'IBM Plex Mono'; font-size:11px; font-weight:600; color:var(--brand-dark);
+  }
+  .field .hint{ font-size:11px; color:var(--ink-faint); margin-top:4px; }
+
+  .input-wrap{ position:relative; }
+  .input-wrap .unit{
+    position:absolute; right:12px; top:50%; transform:translateY(-50%);
+    font-size:12.5px; color:var(--ink-faint); pointer-events:none;
+    font-family:'IBM Plex Mono';
+  }
+  input[type=number], input[type=text], select{
+    width:100%; font-family:'IBM Plex Mono', monospace; font-size:14px;
+    padding:10px 12px; border-radius:9px; border:1.5px solid var(--line);
+    background:#FCFDFB; color:var(--ink);
+    transition:border-color .15s ease, background .15s ease;
+    appearance:none; -webkit-appearance:none;
+  }
+  select{ font-family:'IBM Plex Sans Thai'; cursor:pointer; padding-right:32px;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0l5 6 5-6z' fill='%235C6B61'/></svg>");
+    background-repeat:no-repeat; background-position:right 12px center;
+  }
+  input[type=number]{ padding-right:44px; }
+  input:focus, select:focus{
+    outline:none; border-color:var(--brand); background:#fff;
+    box-shadow:0 0 0 3px var(--brand-tint);
+  }
+  input::-webkit-outer-spin-button, input::-webkit-inner-spin-button{ margin:0; }
+
+  .chip-group{ display:flex; gap:8px; flex-wrap:wrap; }
+  .chip{
+    flex:1; min-width:110px; text-align:center; cursor:pointer;
+    border:1.5px solid var(--line); border-radius:9px; padding:9px 10px;
+    font-size:13px; font-weight:600; color:var(--ink-soft);
+    background:#FCFDFB;
+    transition:all .15s ease;
+    user-select:none;
+  }
+  .chip.active{
+    border-color:var(--brand); background:var(--brand-tint); color:var(--brand-dark);
+  }
+
+  .switch-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:11px 0; border-bottom:1px dashed var(--line);
+    gap:12px;
+  }
+  .switch-row:last-child{ border-bottom:none; }
+  .switch-label{ font-size:13px; font-weight:500; }
+  .switch-label .sub{ display:block; font-size:11px; color:var(--ink-faint); font-weight:400; margin-top:2px; }
+  .switch{
+    position:relative; width:42px; height:24px; border-radius:100px;
+    background:#D3DACC; cursor:pointer; flex-shrink:0; transition:background .18s ease;
+  }
+  .switch::after{
+    content:""; position:absolute; top:3px; left:3px; width:18px; height:18px;
+    border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.25);
+    transition: transform .18s ease;
+  }
+  .switch.on{ background:var(--brand); }
+  .switch.on::after{ transform:translateX(18px); }
+
+  .small-seller-extra{
+    margin-top:10px; padding:10px 12px; background:var(--amber-tint);
+    border-radius:9px; display:none; align-items:center; gap:10px;
+  }
+  .small-seller-extra.show{ display:flex; }
+  .small-seller-extra input[type=range]{ flex:1; accent-color:var(--amber); }
+  .small-seller-extra .val{ font-family:'IBM Plex Mono'; font-weight:700; font-size:13px; color:#8A6412; min-width:38px; text-align:right; }
+
+  /* ---------- Marketing budget (optional) ---------- */
+  .group-header-toggle{
+    display:flex; align-items:center; justify-content:space-between;
+    cursor:pointer; user-select:none; margin-bottom:4px;
+  }
+  .group-header-toggle .group-title{ margin-bottom:0; flex:1; }
+  .marketing-body{ display:none; padding-top:6px; }
+  .marketing-body.show{ display:block; }
+  .mkt-item{
+    padding:10px 0; border-bottom:1px dashed var(--line);
+  }
+  .mkt-item:last-child{ border-bottom:none; }
+  .mkt-item-row{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+  }
+  .mkt-label{ font-size:13px; font-weight:500; }
+  .mkt-label .sub{ display:block; font-size:11px; color:var(--ink-faint); font-weight:400; margin-top:2px; }
+  .mkt-fixed-tag{
+    font-family:'IBM Plex Mono'; font-size:11.5px; font-weight:600;
+    background:var(--fee-tint); color:var(--fee); padding:3px 8px; border-radius:100px;
+    white-space:nowrap;
+  }
+  .mkt-input-extra{
+    display:none; align-items:center; gap:8px; margin-top:9px;
+  }
+  .mkt-input-extra.show{ display:flex; }
+  .mkt-input-extra input[type=number]{ max-width:100px; }
+  .mkt-input-extra .pct-suffix{ font-size:12.5px; color:var(--ink-faint); font-family:'IBM Plex Mono'; }
+  .roas-chip{
+    margin-left:8px; font-family:'IBM Plex Mono'; font-size:11px; font-weight:700;
+    background:var(--brand-tint); color:var(--brand-dark); padding:3px 8px; border-radius:100px;
+    white-space:nowrap;
+  }
+  .chevron{
+    width:9px; height:9px; border-right:2px solid var(--ink-faint); border-bottom:2px solid var(--ink-faint);
+    transform:rotate(45deg); transition:transform .18s ease; margin-left:8px; flex-shrink:0;
+  }
+  .chevron.open{ transform:rotate(-135deg); }
+
+  /* ---------- Receipt ---------- */
+  .receipt-wrap{ position:sticky; top:18px; }
+  .receipt{
+    background:var(--paper); border-radius:2px;
+    box-shadow: var(--shadow);
+    position:relative;
+    padding:0 0 4px;
+  }
+  .zig-top, .zig-bottom{
+    height:12px; width:100%;
+    background:
+      linear-gradient(135deg, var(--paper) 50%, transparent 50%) 0 0,
+      linear-gradient(45deg, var(--paper) 50%, transparent 50%) 0 0;
+    background-size:16px 16px;
+    background-repeat:repeat-x;
+  }
+  .zig-top{ background-color:transparent; filter:drop-shadow(0 -2px 2px rgba(30,42,34,0.03)); }
+  .zig-bottom{ transform:scaleY(-1); }
+
+  .receipt-inner{ padding:22px 22px 18px; }
+  .receipt-head{ text-align:center; margin-bottom:14px; }
+  .receipt-head .store{ font-family:'IBM Plex Mono'; font-weight:700; font-size:14px; letter-spacing:.03em; }
+  .receipt-head .doc{ font-size:11px; color:var(--ink-faint); margin-top:3px; }
+  .receipt-head .item-name{ font-size:12.5px; color:var(--ink-soft); margin-top:8px; font-weight:500; }
+
+  .dashed{ border-top:1px dashed var(--line-strong); margin:12px 0; }
+
+  .rline{ display:flex; justify-content:space-between; gap:10px; padding:4px 0; font-size:13px; }
+  .rline .rlabel{ color:var(--ink-soft); }
+  .rline .rval{ font-family:'IBM Plex Mono'; font-weight:500; }
+  .rline.deduct .rval{ color:var(--fee); }
+  .rline.deduct .rlabel::before{ content:"− "; color:var(--fee); }
+  .rline.sum{ font-weight:700; }
+  .rline.sum .rval{ font-weight:700; }
+  .rline.suggest .rlabel{ font-weight:600; color:var(--ink); }
+
+  .fee-pct-tag{
+    display:inline-block; margin-left:6px; font-size:10.5px; font-family:'IBM Plex Mono';
+    background:var(--fee-tint); color:var(--fee); padding:1px 6px; border-radius:100px;
+  }
+
+  .profit-block{
+    margin-top:14px; padding:16px; border-radius:10px;
+    text-align:center;
+    background:var(--brand-tint); border:1px solid #F0C7A6;
+    transition: background .25s ease, border-color .25s ease;
+  }
+  .profit-block .plabel{ font-size:11.5px; font-weight:600; letter-spacing:.03em; text-transform:uppercase; color:var(--brand-dark); transition: color .25s ease; }
+  .profit-block .pval{
+    font-family:'IBM Plex Mono'; font-size:32px; font-weight:700;
+    margin:4px 0 2px; letter-spacing:-0.01em; color:var(--brand-dark);
+    transition: color .25s ease;
+  }
+  .profit-block .pmargin{ font-size:12.5px; color:var(--brand-dark); transition: color .25s ease; }
+  .profit-block .pmargin b{ font-family:'IBM Plex Mono'; }
+
+  .profit-block.is-positive{ background:#E3F5EA; border-color:#B7E1C6; }
+  .profit-block.is-positive .plabel,
+  .profit-block.is-positive .pval,
+  .profit-block.is-positive .pmargin{ color:#1B7A50; }
+
+  .profit-block.is-negative{ background:#FBE8E6; border-color:#F0BEB8; }
+  .profit-block.is-negative .plabel,
+  .profit-block.is-negative .pval,
+  .profit-block.is-negative .pmargin{ color:#B3271C; }
+
+
+  .suggest-block{
+    margin-top:14px; padding:16px; border-radius:10px;
+    background:var(--amber-tint); border:1px solid #EAD4A0;
+    text-align:center;
+  }
+  .suggest-block .plabel{ font-size:11.5px; color:#8A6412; font-weight:600; letter-spacing:.03em; text-transform:uppercase; }
+  .suggest-block .pval{ font-family:'IBM Plex Mono'; font-size:30px; font-weight:700; color:#8A6412; margin:4px 0 2px; }
+  .suggest-block .psub{ font-size:11.5px; color:#9A7420; }
+
+  .warn-block{
+    margin-top:14px; padding:12px 14px; border-radius:10px;
+    background:var(--fee-tint); border:1px solid #EFC3AF; color:var(--fee);
+    font-size:12.5px; text-align:center; font-weight:500;
+  }
+
+  .receipt-foot{
+    margin-top:14px; font-size:10.5px; color:var(--ink-faint); text-align:center;
+    border-top:1px dashed var(--line); padding-top:10px;
+  }
+
+  footer.legal{
+    margin-top:26px; text-align:center; font-size:11px; color:var(--ink-faint);
+    line-height:1.7;
+  }
+  footer.legal a{ color:var(--ink-soft); }
+
+  ::selection{ background:var(--brand-tint); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="brand-block">
+      <div class="brand-mark">฿</div>
+      <div class="brand-text">
+        <h1>คำนวณราคาขาย & ค่าธรรมเนียม Shopee</h1>
+        <p>ดูกำไรจริงก่อนตั้งราคา — คำนวณค่าธรรมเนียมทุกรายการอัตโนมัติ</p>
+      </div>
+    </div>
+    <div class="rate-badge">อัตราค่าธรรมเนียมมีผล <b>4 ส.ค. 2569</b></div>
+  </div>
+
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="modeForwardBtn" onclick="setMode('forward')">คำนวณกำไรจากราคาขาย</button>
+    <button class="mode-btn" id="modeReverseBtn" onclick="setMode('reverse')">หาราคาขายจากกำไรเป้าหมาย</button>
+  </div>
+
+  <div class="layout">
+    <!-- ============ INPUT PANEL ============ -->
+    <section class="card">
+
+      <div class="group">
+        <div class="group-title">ข้อมูลสินค้า</div>
+        <div class="field-row single">
+          <div class="field">
+            <label for="productName">ชื่อสินค้า</label>
+            <input type="text" id="productName" value="เสื้อยืดคอกลม" oninput="calc()">
+          </div>
+        </div>
+        <div class="field-row" id="priceFieldRow">
+          <div class="field">
+            <label for="priceInput">ราคาขายที่ตั้ง</label>
+            <div class="input-wrap">
+              <input type="number" id="priceInput" value="500" min="0" step="1" oninput="calc()">
+              <span class="unit">บาท</span>
+            </div>
+          </div>
+          <div class="field">
+            <label for="costInput">ต้นทุนสินค้า/หน่วย <span class="hint-inline" id="costPctLabel">(0.0% ของราคาขาย)</span></label>
+            <div class="input-wrap">
+              <input type="number" id="costInput" value="200" min="0" step="1" oninput="calc()">
+              <span class="unit">บาท</span>
+            </div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="packInput">ค่าแพ็ค/ดำเนินการอื่นๆ</label>
+            <div class="input-wrap">
+              <input type="number" id="packInput" value="15" min="0" step="1" oninput="calc()">
+              <span class="unit">บาท</span>
+            </div>
+          </div>
+          <div class="field">
+            <label for="shipInput">ค่าส่งที่ลูกค้าจ่าย</label>
+            <div class="input-wrap">
+              <input type="number" id="shipInput" value="38" min="0" step="1" oninput="calc()">
+              <span class="unit">บาท</span>
+            </div>
+          </div>
+        </div>
+        <div class="field-row single" id="targetMarginRow" style="display:none;">
+          <div class="field">
+            <label for="marginInput">อัตรากำไรที่ต้องการ (% ของราคาขาย)</label>
+            <div class="input-wrap">
+              <input type="number" id="marginInput" value="25" min="0" max="90" step="1" oninput="calc()">
+              <span class="unit">%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-title">ประเภทร้าน & หมวดสินค้า</div>
+        <div class="field-row single">
+          <div class="field">
+            <label>ประเภทร้านค้า</label>
+            <div class="chip-group" id="shopTypeChips">
+              <div class="chip active" data-value="nonmall" onclick="selectChip('shopTypeChips', this, calc)">ร้านทั่วไป</div>
+              <div class="chip" data-value="mall" onclick="selectChip('shopTypeChips', this, calc)">Shopee Mall</div>
+            </div>
+          </div>
+        </div>
+        <div class="field-row single">
+          <div class="field">
+            <label for="categorySelect">หมวดสินค้า</label>
+            <select id="categorySelect" onchange="calc()"></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-title">การชำระเงินของลูกค้า</div>
+        <div class="field-row single">
+          <div class="field">
+            <label for="paymentSelect">วิธีชำระเงิน</label>
+            <select id="paymentSelect" onchange="calc()"></select>
+            <div class="hint">Transaction Fee คิดจาก (ราคาสินค้า + ค่าจัดส่ง) ตามวิธีชำระ</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-title">โปรแกรมร้านค้าที่เข้าร่วม</div>
+        <div class="switch-row">
+          <div class="switch-label">PRIME Seller
+            <span class="sub">ลดค่าคอมมิชชั่น แลกกับค่าธรรมเนียมโปรแกรม</span>
+          </div>
+          <div class="switch" id="primeSwitch" onclick="toggleSwitch(this, calc)"></div>
+        </div>
+        <div class="switch-row">
+          <div class="switch-label">ร้านโค้ดคุ้ม / Xtra
+            <span class="sub">เสีย Service Fee เพิ่ม เพื่อแจกโค้ดส่งฟรี/ส่วนลด</span>
+          </div>
+          <div class="switch" id="xtraSwitch" onclick="toggleSwitch(this, calc)"></div>
+        </div>
+        <div class="switch-row">
+          <div class="switch-label">ยอดขาย ≤ 10,000 บาท / 30 วัน
+            <span class="sub">เข้าเกณฑ์ส่วนลดผู้ขายรายเล็กอัตโนมัติ</span>
+          </div>
+          <div class="switch" id="smallSwitch" onclick="toggleSmallSeller(this)"></div>
+        </div>
+        <div class="small-seller-extra" id="smallSellerExtra">
+          <span style="font-size:12px; color:#8A6412; white-space:nowrap;">ส่วนลด</span>
+          <input type="range" id="smallDiscountRange" min="0.5" max="1.5" step="0.1" value="1" oninput="onSmallRange()">
+          <span class="val" id="smallDiscountVal">1.0%</span>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-header-toggle" onclick="toggleMarketingGroup()">
+          <div class="group-title" style="margin-bottom:0;">งบการตลาด (Marketing) — เพิ่มเติม</div>
+          <div class="chevron" id="mktChevron"></div>
+        </div>
+        <div class="hint" style="margin-bottom:8px;">รายการนี้เป็นตัวเลือกเสริม เปิดเฉพาะรายการที่ร้านใช้จริง</div>
+
+        <div class="marketing-body" id="marketingBody">
+
+          <div class="mkt-item">
+            <div class="mkt-item-row">
+              <div class="mkt-label">แคมเปญ (Double Digit / Mid Month / Pay Day)
+                <span class="sub">ส่วนลดร่วมรายการแคมเปญ Shopee</span>
+              </div>
+              <div class="switch" id="campaignSwitch" onclick="toggleMktInput(this,'campaignExtra')"></div>
+            </div>
+            <div class="mkt-input-extra" id="campaignExtra">
+              <input type="number" id="campaignPct" value="5" min="0" max="100" step="0.1" oninput="calc()">
+              <span class="pct-suffix">%</span>
+            </div>
+          </div>
+
+          <div class="mkt-item">
+            <div class="mkt-item-row">
+              <div class="mkt-label">Seller Voucher
+                <span class="sub">โค้ดส่วนลดที่ร้านออกเอง</span>
+              </div>
+              <div class="switch" id="voucherSwitch" onclick="toggleMktInput(this,'voucherExtra')"></div>
+            </div>
+            <div class="mkt-input-extra" id="voucherExtra">
+              <input type="number" id="voucherPct" value="5" min="0" max="100" step="0.1" oninput="calc()">
+              <span class="pct-suffix">%</span>
+            </div>
+          </div>
+
+          <div class="mkt-item">
+            <div class="mkt-item-row">
+              <div class="mkt-label">Seller Flash Sale
+                <span class="sub">เข้าร่วม Flash Sale ของร้าน</span>
+              </div>
+              <span class="mkt-fixed-tag">คงที่ 5%</span>
+              <div class="switch" id="flashSaleSwitch" onclick="toggleSwitch(this, calc)"></div>
+            </div>
+          </div>
+
+          <div class="mkt-item">
+            <div class="mkt-item-row">
+              <div class="mkt-label">Flash Sale Dynamic
+                <span class="sub">ราคาปรับอัตโนมัติตามดีมานด์</span>
+              </div>
+              <span class="mkt-fixed-tag">คงที่ 3.21%</span>
+              <div class="switch" id="flashDynamicSwitch" onclick="toggleSwitch(this, calc)"></div>
+            </div>
+          </div>
+
+          <div class="mkt-item">
+            <div class="mkt-item-row">
+              <div class="mkt-label">Exclusive Price
+                <span class="sub">ราคาพิเศษเฉพาะแคมเปญ/ช่องทาง</span>
+              </div>
+              <div class="switch" id="exclusiveSwitch" onclick="toggleMktInput(this,'exclusiveExtra')"></div>
+            </div>
+            <div class="mkt-input-extra" id="exclusiveExtra">
+              <input type="number" id="exclusivePct" value="5" min="0" max="100" step="0.1" oninput="calc()">
+              <span class="pct-suffix">%</span>
+            </div>
+          </div>
+
+          <div class="mkt-item">
+            <div class="mkt-item-row">
+              <div class="mkt-label">Affiliate Commission
+                <span class="sub">ค่าคอมมิชชั่นให้ครีเอเตอร์/นักรีวิว</span>
+              </div>
+              <div class="switch" id="affiliateSwitch" onclick="toggleMktInput(this,'affiliateExtra')"></div>
+            </div>
+            <div class="mkt-input-extra" id="affiliateExtra">
+              <input type="number" id="affiliatePct" value="10" min="0" max="100" step="0.1" oninput="calc()">
+              <span class="pct-suffix">%</span>
+            </div>
+          </div>
+
+          <div class="mkt-item">
+            <div class="mkt-item-row">
+              <div class="mkt-label">Shopee Ads
+                <span class="sub">งบโฆษณาคิดเป็น % ของยอดขาย</span>
+              </div>
+              <div class="switch" id="adsSwitch" onclick="toggleMktInput(this,'adsExtra')"></div>
+            </div>
+            <div class="mkt-input-extra" id="adsExtra">
+              <input type="number" id="adsPct" value="10" min="0" max="100" step="0.1" oninput="calc()">
+              <span class="pct-suffix">%</span>
+              <span class="roas-chip" id="roasChip">ROAS เป้าหมาย 10.0x</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============ RECEIPT PANEL ============ -->
+    <aside class="receipt-wrap">
+      <div class="receipt">
+        <div class="zig-top"></div>
+        <div class="receipt-inner">
+          <div class="receipt-head">
+            <div class="store">ใบสรุปค่าธรรมเนียม SHOPEE</div>
+            <div class="doc" id="docDate"></div>
+            <div class="item-name" id="receiptProductName">เสื้อยืดคอกลม</div>
+          </div>
+
+          <div class="dashed"></div>
+
+          <div class="rline"><span class="rlabel">ราคาขาย</span><span class="rval mono" id="rPrice">฿0.00</span></div>
+          <div class="rline"><span class="rlabel">ค่าจัดส่ง (ลูกค้าจ่าย)</span><span class="rval mono" id="rShip">฿0.00</span></div>
+
+          <div class="dashed"></div>
+
+          <div class="rline deduct"><span class="rlabel">ค่า Commission<span class="fee-pct-tag" id="rCommRate">0%</span></span><span class="rval mono" id="rComm">฿0.00</span></div>
+          <div class="rline deduct"><span class="rlabel">Transaction Fee<span class="fee-pct-tag" id="rTxRate">0%</span></span><span class="rval mono" id="rTx">฿0.00</span></div>
+          <div class="rline deduct" id="rServiceRow"><span class="rlabel">Service Fee (Xtra)<span class="fee-pct-tag" id="rServiceRate">0%</span></span><span class="rval mono" id="rService">฿0.00</span></div>
+          <div class="rline deduct"><span class="rlabel">Platform Fee</span><span class="rval mono" id="rPlatform">฿1.07</span></div>
+
+          <div class="dashed"></div>
+
+          <div class="rline sum"><span class="rlabel">รวมค่าธรรมเนียม Shopee</span><span class="rval mono" id="rTotalFee">฿0.00</span></div>
+          <div class="rline"><span class="rlabel">เงินรับสุทธิจาก Shopee</span><span class="rval mono" id="rNetReceive">฿0.00</span></div>
+
+          <div id="marketingReceiptBlock" style="display:none;">
+            <div class="dashed"></div>
+            <div class="rline" style="font-size:11px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.05em; font-weight:700;"><span>งบการตลาด</span></div>
+            <div class="rline deduct" id="rCampaignRow" style="display:none;"><span class="rlabel">แคมเปญ (DD/MM/PD)<span class="fee-pct-tag" id="rCampaignRate">0%</span></span><span class="rval mono" id="rCampaign">฿0.00</span></div>
+            <div class="rline deduct" id="rVoucherRow" style="display:none;"><span class="rlabel">Seller Voucher<span class="fee-pct-tag" id="rVoucherRate">0%</span></span><span class="rval mono" id="rVoucher">฿0.00</span></div>
+            <div class="rline deduct" id="rFlashSaleRow" style="display:none;"><span class="rlabel">Seller Flash Sale<span class="fee-pct-tag">5.00%</span></span><span class="rval mono" id="rFlashSale">฿0.00</span></div>
+            <div class="rline deduct" id="rFlashDynamicRow" style="display:none;"><span class="rlabel">Flash Sale Dynamic<span class="fee-pct-tag">3.21%</span></span><span class="rval mono" id="rFlashDynamic">฿0.00</span></div>
+            <div class="rline deduct" id="rExclusiveRow" style="display:none;"><span class="rlabel">Exclusive Price<span class="fee-pct-tag" id="rExclusiveRate">0%</span></span><span class="rval mono" id="rExclusive">฿0.00</span></div>
+            <div class="rline deduct" id="rAffiliateRow" style="display:none;"><span class="rlabel">Affiliate Commission<span class="fee-pct-tag" id="rAffiliateRate">0%</span></span><span class="rval mono" id="rAffiliate">฿0.00</span></div>
+            <div class="rline deduct" id="rAdsRow" style="display:none;"><span class="rlabel">Shopee Ads<span class="fee-pct-tag" id="rAdsRate">0%</span></span><span class="rval mono" id="rAds">฿0.00</span></div>
+            <div class="rline" id="rRoasRow" style="display:none; font-size:12px; color:var(--brand-dark);"><span class="rlabel">ROAS เป้าหมาย (Shopee Ads)</span><span class="rval mono" id="rRoas">0.0x</span></div>
+            <div class="dashed"></div>
+            <div class="rline sum"><span class="rlabel">รวมงบการตลาด</span><span class="rval mono" id="rTotalMarketing">฿0.00</span></div>
+          </div>
+
+          <div class="dashed"></div>
+          <div class="rline sum" style="font-size:14px;"><span class="rlabel">รวมค่าใช้จ่ายทั้งหมด</span><span class="rval mono" id="rGrandTotal">฿0.00</span></div>
+          <div class="rline"><span class="rlabel">คิดเป็น % ของราคาขาย</span><span class="rval mono" id="rGrandTotalPct">0.00%</span></div>
+
+          <div class="profit-block" id="profitBlock">
+            <div class="plabel">กำไรสุทธิต่อชิ้น</div>
+            <div class="pval" id="rProfit">฿0.00</div>
+            <div class="pmargin">Margin <b id="rMargin">0.0%</b> ของราคาขาย</div>
+          </div>
+
+          <div class="suggest-block" id="suggestBlock" style="display:none;">
+            <div class="plabel">ราคาขายที่ควรตั้ง</div>
+            <div class="pval" id="rSuggestPrice">฿0.00</div>
+            <div class="psub">เพื่อให้ได้กำไรตามเป้าที่ตั้งไว้</div>
+          </div>
+
+          <div class="warn-block" id="warnBlock" style="display:none;">
+            อัตรากำไรที่ต้องการสูงเกินไป — ไม่มีราคาขายที่เป็นไปได้ ลองลดเป้าหมายกำไรลง
+          </div>
+
+          <div class="receipt-foot">ตัวเลขเป็นการประมาณการเพื่อวางแผนราคา โปรดตรวจสอบกับ Seller Centre ของร้านอีกครั้ง</div>
+        </div>
+        <div class="zig-bottom"></div>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="legal">
+    อ้างอิงอัตราค่าธรรมเนียมจากประกาศ Shopee Seller Centre (ปรับปรุง 3 ก.ค. 2569 มีผล 4 ส.ค. 2569) · ไม่รวมค่าธรรมเนียมพิเศษอื่น เช่น ค่ารักษาบัญชี ค่าโฆษณา หรือผลของโค้ดส่วนลด
+    <br>© 2026 Copyright by Gle Atthachai
+  </footer>
+
+</div>
+
+<script>
+  // ---------------- Data (rates effective 4 Aug 2026) ----------------
+  const CATEGORIES = [
+    {name:"อิเล็กทรอนิกส์ (ต่ำสุด)", nonmall:0.0749, mall:0.0749, service:0.0749, prime:0.0107},
+    {name:"อิเล็กทรอนิกส์ (สูงสุด)", nonmall:0.1605, mall:0.1926, service:0.0856, prime:0.0107},
+    {name:"แฟชั่น (ต่ำสุด)", nonmall:0.1712, mall:0.1926, service:0.0856, prime:0.0107},
+    {name:"แฟชั่น (สูงสุด)", nonmall:0.1712, mall:0.1926, service:0.0856, prime:0.0107},
+    {name:"FMCG (อาหาร/ของใช้)", nonmall:0.1605, mall:0.1926, service:0.0856, prime:0.0107},
+    {name:"ไลฟ์สไตล์ (ต่ำสุด)", nonmall:0.1177, mall:0.1498, service:0.0749, prime:0.0107},
+    {name:"ไลฟ์สไตล์ (สูงสุด)", nonmall:0.1605, mall:0.1926, service:0.0856, prime:0.0107},
+    {name:"สินค้าอื่นๆ", nonmall:0.1605, mall:0.1926, service:0.0856, prime:0.0107},
+    {name:"ทอง & แพลตตินั่ม", nonmall:0.0803, mall:0.1124, service:0.0535, prime:0.0214},
+    {name:"เงิน (โลหะมีค่า)", nonmall:0.1445, mall:0.1659, service:0.0749, prime:0.0},
+    {name:"เครื่องประดับ (แหวน/สร้อย/กำไล)", nonmall:0.1338, mall:0.1659, service:0.0749, prime:0.0107},
+    {name:"เครื่องประดับมีมูลค่า", nonmall:0.1552, mall:0.1873, service:0.0856, prime:0.0107},
+    {name:"มือถือ/แท็บเล็ต/แล็ปท็อป", nonmall:0.0749, mall:0.0749, service:0.0749, prime:0.0},
+    {name:"เครื่องใช้ไฟฟ้าใหญ่ (ตู้เย็น/ซักผ้า)", nonmall:0.1124, mall:0.1177, service:0.0749, prime:0.0107},
+    {name:"คอมพิวเตอร์ (จอ/ชิ้นส่วน)", nonmall:0.0856, mall:0.0963, service:0.0749, prime:0.0107},
+    {name:"คอมพิวเตอร์ (จัดเก็บข้อมูล/ปริ้นเตอร์)", nonmall:0.1177, mall:0.1284, service:0.0749, prime:0.0107},
+    {name:"คอมพิวเตอร์ (อุปกรณ์ต่อพ่วง/เน็ตเวิร์ก)", nonmall:0.1445, mall:0.1552, service:0.0856, prime:0.0107},
+    {name:"เกม (แผ่น/ตลับ/เครื่องเกม)", nonmall:0.1338, mall:0.1445, service:0.0856, prime:0.0},
+    {name:"กล้องวงจรปิด/โดรน/ซอฟต์แวร์", nonmall:0.1605, mall:0.1712, service:0.0856, prime:0.0107},
+    {name:"หนังสือและนิตยสาร", nonmall:0.1445, mall:0.1766, service:0.0749, prime:0.0107},
+    {name:"เครื่องประดับ (เพชร/หยก เพื่อการลงทุน)", nonmall:0.1659, mall:0.1873, service:0.0856, prime:0.0107},
+    {name:"ยานยนต์/มอเตอร์ไซค์ (ตัวรถ)", nonmall:0.1017, mall:0.1338, service:0.0749, prime:0.0107},
+    {name:"เครื่องเสียง/โปรเจคเตอร์/เครื่องใช้ไฟฟ้าในบ้าน", nonmall:0.1552, mall:0.1659, service:0.0856, prime:0.0107},
+    {name:"ทีวีและอุปกรณ์", nonmall:0.1177, mall:0.1177, service:0.0856, prime:0.0107},
+  ];
+
+  const PAYMENT_METHODS = [
+    {name:"ปกติ (โอน/เดบิต/ShopeePay/COD)", rate:0.0321},
+    {name:"SPayLater (จ่ายเดือนหน้า)", rate:0.0321},
+    {name:"Special SPayLater ผ่อน 1 เดือน", rate:0.0321},
+    {name:"Special SPayLater ผ่อน 2 เดือน", rate:0.0428},
+    {name:"Special SPayLater ผ่อน 3 เดือน", rate:0.0535},
+    {name:"Special SPayLater ผ่อน 5 เดือน", rate:0.0696},
+    {name:"Special SPayLater ผ่อน 12 เดือน", rate:0.0749},
+    {name:"บัตรเครดิตผ่อน 3 เดือน", rate:0.0535},
+    {name:"บัตรเครดิตผ่อน 6 เดือน", rate:0.0696},
+    {name:"บัตรเครดิตผ่อน 10 เดือนขึ้นไป", rate:0.0749},
+  ];
+
+  const PLATFORM_FEE = 1.07;
+
+  let mode = 'forward'; // or 'reverse'
+
+  // ---------------- Populate selects ----------------
+  const catSelect = document.getElementById('categorySelect');
+  CATEGORIES.forEach((c, i) => {
+    const opt = document.createElement('option');
+    opt.value = i; opt.textContent = c.name;
+    if(i === 2) opt.selected = true; // default: แฟชั่น (ต่ำสุด)
+    catSelect.appendChild(opt);
+  });
+
+  const paySelect = document.getElementById('paymentSelect');
+  PAYMENT_METHODS.forEach((p, i) => {
+    const opt = document.createElement('option');
+    opt.value = i; opt.textContent = p.name;
+    paySelect.appendChild(opt);
+  });
+
+  // ---------------- UI helpers ----------------
+  function selectChip(groupId, el, cb){
+    const group = document.getElementById(groupId);
+    [...group.children].forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    if(cb) cb();
+  }
+
+  function toggleSwitch(el, cb){
+    el.classList.toggle('on');
+    if(cb) cb();
+  }
+
+  function toggleSmallSeller(el){
+    el.classList.toggle('on');
+    document.getElementById('smallSellerExtra').classList.toggle('show', el.classList.contains('on'));
+    calc();
+  }
+
+  function onSmallRange(){
+    const v = document.getElementById('smallDiscountRange').value;
+    document.getElementById('smallDiscountVal').textContent = parseFloat(v).toFixed(1) + '%';
+    calc();
+  }
+
+  function toggleMarketingGroup(){
+    const body = document.getElementById('marketingBody');
+    const chevron = document.getElementById('mktChevron');
+    body.classList.toggle('show');
+    chevron.classList.toggle('open');
+  }
+
+  function toggleMktInput(switchEl, extraId){
+    switchEl.classList.toggle('on');
+    document.getElementById(extraId).classList.toggle('show', switchEl.classList.contains('on'));
+    calc();
+  }
+
+  function setMode(m){
+    mode = m;
+    document.getElementById('modeForwardBtn').classList.toggle('active', m==='forward');
+    document.getElementById('modeReverseBtn').classList.toggle('active', m==='reverse');
+    document.getElementById('targetMarginRow').style.display = m === 'reverse' ? '' : 'none';
+    document.getElementById('priceFieldRow').style.display = m === 'reverse' ? 'none' : '';
+    document.getElementById('suggestBlock').style.display = m === 'reverse' ? '' : 'none';
+    calc();
+  }
+
+  function fmtBaht(n){
+    const sign = n < 0 ? '-' : '';
+    return sign + '฿' + Math.abs(n).toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+  function fmtPct(n){
+    return (n*100).toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2}) + '%';
+  }
+
+  const today = new Date();
+  document.getElementById('docDate').textContent = 'วันที่ ' + today.toLocaleDateString('th-TH', {day:'2-digit', month:'long', year:'numeric'});
+
+  // ---------------- Core calculation ----------------
+  function calc(){
+    const cost = parseFloat(document.getElementById('costInput').value) || 0;
+    const pack = parseFloat(document.getElementById('packInput').value) || 0;
+    const ship = parseFloat(document.getElementById('shipInput').value) || 0;
+    const productName = document.getElementById('productName').value || 'สินค้า';
+    document.getElementById('receiptProductName').textContent = productName;
+
+    const isMall = document.querySelector('#shopTypeChips .chip.active').dataset.value === 'mall';
+    const cat = CATEGORIES[catSelect.value];
+    const pay = PAYMENT_METHODS[paySelect.value];
+
+    const isPrime = document.getElementById('primeSwitch').classList.contains('on');
+    const isXtra = document.getElementById('xtraSwitch').classList.contains('on');
+    const isSmall = document.getElementById('smallSwitch').classList.contains('on');
+    const smallDiscount = isSmall ? parseFloat(document.getElementById('smallDiscountRange').value)/100 : 0;
+
+    const baseCommRate = isMall ? cat.mall : cat.nonmall;
+    const primeDiscount = isPrime ? cat.prime : 0;
+    const commRate = Math.max(baseCommRate - primeDiscount - smallDiscount, 0);
+    const txRate = pay.rate;
+    const serviceRate = isXtra ? cat.service : 0;
+
+    // update rate tags
+    document.getElementById('rCommRate').textContent = fmtPct(commRate);
+    document.getElementById('rTxRate').textContent = fmtPct(txRate);
+    document.getElementById('rServiceRate').textContent = fmtPct(serviceRate);
+    document.getElementById('rServiceRow').style.display = isXtra ? '' : 'none';
+
+    // ---------- Marketing budget (optional) ----------
+    const isCampaign = document.getElementById('campaignSwitch').classList.contains('on');
+    const isVoucher = document.getElementById('voucherSwitch').classList.contains('on');
+    const isFlashSale = document.getElementById('flashSaleSwitch').classList.contains('on');
+    const isFlashDynamic = document.getElementById('flashDynamicSwitch').classList.contains('on');
+    const isExclusive = document.getElementById('exclusiveSwitch').classList.contains('on');
+    const isAffiliate = document.getElementById('affiliateSwitch').classList.contains('on');
+    const isAds = document.getElementById('adsSwitch').classList.contains('on');
+
+    const campaignRate = isCampaign ? (parseFloat(document.getElementById('campaignPct').value) || 0)/100 : 0;
+    const voucherRate = isVoucher ? (parseFloat(document.getElementById('voucherPct').value) || 0)/100 : 0;
+    const flashSaleRate = isFlashSale ? 0.05 : 0;
+    const flashDynamicRate = isFlashDynamic ? 0.0321 : 0;
+    const exclusiveRate = isExclusive ? (parseFloat(document.getElementById('exclusivePct').value) || 0)/100 : 0;
+    const affiliateRate = isAffiliate ? (parseFloat(document.getElementById('affiliatePct').value) || 0)/100 : 0;
+    const adsPctRaw = parseFloat(document.getElementById('adsPct').value) || 0;
+    const adsRate = isAds ? adsPctRaw/100 : 0;
+
+    const marketingRate = campaignRate + voucherRate + flashSaleRate + flashDynamicRate + exclusiveRate + affiliateRate + adsRate;
+    const anyMarketing = isCampaign || isVoucher || isFlashSale || isFlashDynamic || isExclusive || isAffiliate || isAds;
+
+    // ROAS target chip (shown live even before price is known: ROAS = 100 / %ads)
+    const roasChip = document.getElementById('roasChip');
+    if(isAds && adsPctRaw > 0){
+      roasChip.style.display = '';
+      roasChip.textContent = 'ROAS เป้าหมาย ' + (100/adsPctRaw).toLocaleString('th-TH',{minimumFractionDigits:1,maximumFractionDigits:1}) + 'x';
+    } else {
+      roasChip.style.display = 'none';
+    }
+
+    let price;
+    let warn = false;
+
+    if(mode === 'forward'){
+      price = parseFloat(document.getElementById('priceInput').value) || 0;
+      document.getElementById('suggestBlock').style.display = 'none';
+    } else {
+      const targetMargin = (parseFloat(document.getElementById('marginInput').value) || 0) / 100;
+      const denom = 1 - commRate - txRate - serviceRate - marketingRate - targetMargin;
+      if(denom <= 0){
+        warn = true;
+        price = 0;
+      } else {
+        price = (txRate*ship + cost + pack + PLATFORM_FEE) / denom;
+      }
+      document.getElementById('suggestBlock').style.display = warn ? 'none' : '';
+      document.getElementById('rSuggestPrice').textContent = fmtBaht(price);
+    }
+
+    document.getElementById('warnBlock').style.display = warn ? '' : 'none';
+
+    const costPctLabel = document.getElementById('costPctLabel');
+    if(price > 0){
+      costPctLabel.textContent = '(' + fmtPct(cost/price) + ' ของราคาขาย)';
+    } else {
+      costPctLabel.textContent = '(0.0% ของราคาขาย)';
+    }
+
+    const commFee = price * commRate;
+    const txFee = (price + ship) * txRate;
+    const serviceFee = price * serviceRate;
+    const totalFee = commFee + txFee + serviceFee + PLATFORM_FEE;
+    const netReceive = price + ship - totalFee;
+
+    const campaignFee = price * campaignRate;
+    const voucherFee = price * voucherRate;
+    const flashSaleFee = price * flashSaleRate;
+    const flashDynamicFee = price * flashDynamicRate;
+    const exclusiveFee = price * exclusiveRate;
+    const affiliateFee = price * affiliateRate;
+    const adsFee = price * adsRate;
+    const totalMarketing = campaignFee + voucherFee + flashSaleFee + flashDynamicFee + exclusiveFee + affiliateFee + adsFee;
+
+    const grandTotalCost = totalFee + totalMarketing;
+    const grandTotalPct = price > 0 ? grandTotalCost/price : 0;
+
+    const profit = price - cost - pack - totalFee - totalMarketing;
+    const margin = price > 0 ? profit / price : 0;
+
+    document.getElementById('rPrice').textContent = fmtBaht(price);
+    document.getElementById('rShip').textContent = fmtBaht(ship);
+    document.getElementById('rComm').textContent = fmtBaht(commFee);
+    document.getElementById('rTx').textContent = fmtBaht(txFee);
+    document.getElementById('rService').textContent = fmtBaht(serviceFee);
+    document.getElementById('rPlatform').textContent = fmtBaht(PLATFORM_FEE);
+    document.getElementById('rTotalFee').textContent = fmtBaht(totalFee);
+    document.getElementById('rNetReceive').textContent = fmtBaht(netReceive);
+
+    // marketing receipt lines
+    document.getElementById('marketingReceiptBlock').style.display = anyMarketing ? '' : 'none';
+
+    document.getElementById('rCampaignRow').style.display = isCampaign ? '' : 'none';
+    document.getElementById('rCampaignRate').textContent = fmtPct(campaignRate);
+    document.getElementById('rCampaign').textContent = fmtBaht(campaignFee);
+
+    document.getElementById('rVoucherRow').style.display = isVoucher ? '' : 'none';
+    document.getElementById('rVoucherRate').textContent = fmtPct(voucherRate);
+    document.getElementById('rVoucher').textContent = fmtBaht(voucherFee);
+
+    document.getElementById('rFlashSaleRow').style.display = isFlashSale ? '' : 'none';
+    document.getElementById('rFlashSale').textContent = fmtBaht(flashSaleFee);
+
+    document.getElementById('rFlashDynamicRow').style.display = isFlashDynamic ? '' : 'none';
+    document.getElementById('rFlashDynamic').textContent = fmtBaht(flashDynamicFee);
+
+    document.getElementById('rExclusiveRow').style.display = isExclusive ? '' : 'none';
+    document.getElementById('rExclusiveRate').textContent = fmtPct(exclusiveRate);
+    document.getElementById('rExclusive').textContent = fmtBaht(exclusiveFee);
+
+    document.getElementById('rAffiliateRow').style.display = isAffiliate ? '' : 'none';
+    document.getElementById('rAffiliateRate').textContent = fmtPct(affiliateRate);
+    document.getElementById('rAffiliate').textContent = fmtBaht(affiliateFee);
+
+    document.getElementById('rAdsRow').style.display = isAds ? '' : 'none';
+    document.getElementById('rAdsRate').textContent = fmtPct(adsRate);
+    document.getElementById('rAds').textContent = fmtBaht(adsFee);
+
+    const roasRow = document.getElementById('rRoasRow');
+    if(isAds && adsPctRaw > 0){
+      roasRow.style.display = '';
+      document.getElementById('rRoas').textContent = (100/adsPctRaw).toLocaleString('th-TH',{minimumFractionDigits:1,maximumFractionDigits:1}) + 'x';
+    } else {
+      roasRow.style.display = 'none';
+    }
+
+    document.getElementById('rTotalMarketing').textContent = fmtBaht(totalMarketing);
+    document.getElementById('rGrandTotal').textContent = fmtBaht(grandTotalCost);
+    document.getElementById('rGrandTotalPct').textContent = fmtPct(grandTotalPct);
+
+    const profitEl = document.getElementById('rProfit');
+    profitEl.textContent = fmtBaht(profit);
+    const profitBlock = document.getElementById('profitBlock');
+    profitBlock.classList.toggle('is-positive', profit >= 0);
+    profitBlock.classList.toggle('is-negative', profit < 0);
+    document.getElementById('rMargin').textContent = fmtPct(margin);
+  }
+
+  calc();
+</script>
+</body>
+</html>
