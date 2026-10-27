@@ -9,22 +9,22 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg: #EEF2EA;
+    --bg: #F6F3F0;
     --paper: #FFFFFF;
-    --ink: #1E2A22;
-    --ink-soft: #5C6B61;
-    --ink-faint: #8C978E;
-    --brand: #E2601C;
-    --brand-dark: #A8420C;
-    --brand-tint: #FCEADD;
-    --fee: #A6321F;
-    --fee-tint: #FBE6E1;
-    --amber: #B9871C;
-    --amber-tint: #FBF1DD;
-    --line: #D7DED2;
-    --line-strong: #B7C1AF;
+    --ink: #2B2623;
+    --ink-soft: #6B625C;
+    --ink-faint: #9A918B;
+    --brand: #EE4D2D;
+    --brand-dark: #C93A1C;
+    --brand-tint: #FFF0EB;
+    --fee: #C0392B;
+    --fee-tint: #FDECEA;
+    --amber: #F2A100;
+    --amber-tint: #FFF6DD;
+    --line: #EBE3DD;
+    --line-strong: #D8CCC3;
     --radius: 14px;
-    --shadow: 0 1px 2px rgba(30,42,34,0.04), 0 8px 24px rgba(30,42,34,0.06);
+    --shadow: 0 1px 2px rgba(70,35,20,0.05), 0 8px 24px rgba(238,77,45,0.08);
   }
   *{ box-sizing:border-box; }
   html,body{ margin:0; padding:0; }
@@ -36,7 +36,7 @@
     line-height:1.5;
     -webkit-font-smoothing:antialiased;
     background-image:
-      radial-gradient(circle at 1px 1px, rgba(30,42,34,0.05) 1px, transparent 0);
+      radial-gradient(circle at 1px 1px, rgba(238,77,45,0.07) 1px, transparent 0);
     background-size: 22px 22px;
   }
   .mono{ font-family:'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; }
@@ -64,10 +64,13 @@
   .brand-text p{ margin:0; font-size:12.5px; color:var(--ink-soft); }
   .rate-badge{
     font-family:'IBM Plex Mono'; font-size:11.5px; color:var(--brand-dark);
-    background:var(--brand-tint); border:1px solid #F0C7A6;
+    background:var(--brand-tint); border:1px solid #FFD3C6;
     padding:6px 11px; border-radius:100px; white-space:nowrap;
   }
   .rate-badge b{ font-weight:700; }
+  .badge-stack{ display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
+  .update-badge{ background:#F6F0EB; border-color:var(--line); color:var(--ink-soft); }
+  .update-badge b{ color:var(--ink); }
 
   /* ---------- Layout ---------- */
   .layout{
@@ -83,7 +86,7 @@
   /* ---------- Mode toggle ---------- */
   .mode-toggle{
     display:grid; grid-template-columns:1fr 1fr; gap:8px;
-    background:#E2E8DD; padding:5px; border-radius:12px;
+    background:#F1E8E2; padding:5px; border-radius:12px;
     margin-bottom:18px;
   }
   .mode-btn{
@@ -132,7 +135,7 @@
   input[type=number], input[type=text], select{
     width:100%; font-family:'IBM Plex Mono', monospace; font-size:14px;
     padding:10px 12px; border-radius:9px; border:1.5px solid var(--line);
-    background:#FCFDFB; color:var(--ink);
+    background:#FFFEFD; color:var(--ink);
     transition:border-color .15s ease, background .15s ease;
     appearance:none; -webkit-appearance:none;
   }
@@ -152,7 +155,7 @@
     flex:1; min-width:110px; text-align:center; cursor:pointer;
     border:1.5px solid var(--line); border-radius:9px; padding:9px 10px;
     font-size:13px; font-weight:600; color:var(--ink-soft);
-    background:#FCFDFB;
+    background:#FFFEFD;
     transition:all .15s ease;
     user-select:none;
   }
@@ -170,7 +173,7 @@
   .switch-label .sub{ display:block; font-size:11px; color:var(--ink-faint); font-weight:400; margin-top:2px; }
   .switch{
     position:relative; width:42px; height:24px; border-radius:100px;
-    background:#D3DACC; cursor:pointer; flex-shrink:0; transition:background .18s ease;
+    background:#DCD0C8; cursor:pointer; flex-shrink:0; transition:background .18s ease;
   }
   .switch::after{
     content:""; position:absolute; top:3px; left:3px; width:18px; height:18px;
@@ -186,7 +189,7 @@
   }
   .small-seller-extra.show{ display:flex; }
   .small-seller-extra input[type=range]{ flex:1; accent-color:var(--amber); }
-  .small-seller-extra .val{ font-family:'IBM Plex Mono'; font-weight:700; font-size:13px; color:#8A6412; min-width:38px; text-align:right; }
+  .small-seller-extra .val{ font-family:'IBM Plex Mono'; font-weight:700; font-size:13px; color:#9A5F00; min-width:38px; text-align:right; }
 
   /* ---------- Marketing budget (optional) ---------- */
   .group-header-toggle{
@@ -268,7 +271,7 @@
     background:var(--fee-tint); color:var(--fee); padding:1px 6px; border-radius:100px;
   }
 
-  .fee-pct-tag.pct-neutral{ background:#EEF1EB; color:var(--ink-soft); }
+  .fee-pct-tag.pct-neutral{ background:#F6F0EB; color:var(--ink-soft); }
   .rsub{ font-size:10.5px; color:var(--ink-faint); text-align:right; margin:-2px 0 2px; }
   .rsub:empty{ display:none; }
   .rpct-note{ font-size:10.5px; color:var(--ink-faint); text-align:right; margin-top:2px; }
@@ -276,7 +279,7 @@
   .profit-block{
     margin-top:14px; padding:16px; border-radius:10px;
     text-align:center;
-    background:var(--brand-tint); border:1px solid #F0C7A6;
+    background:var(--brand-tint); border:1px solid #FFD3C6;
     transition: background .25s ease, border-color .25s ease;
   }
   .profit-block .plabel{ font-size:11.5px; font-weight:600; letter-spacing:.03em; text-transform:uppercase; color:var(--brand-dark); transition: color .25s ease; }
@@ -301,16 +304,16 @@
 
   .suggest-block{
     margin-top:14px; padding:16px; border-radius:10px;
-    background:var(--amber-tint); border:1px solid #EAD4A0;
+    background:var(--amber-tint); border:1px solid #FFE29A;
     text-align:center;
   }
-  .suggest-block .plabel{ font-size:11.5px; color:#8A6412; font-weight:600; letter-spacing:.03em; text-transform:uppercase; }
-  .suggest-block .pval{ font-family:'IBM Plex Mono'; font-size:30px; font-weight:700; color:#8A6412; margin:4px 0 2px; }
-  .suggest-block .psub{ font-size:11.5px; color:#9A7420; }
+  .suggest-block .plabel{ font-size:11.5px; color:#9A5F00; font-weight:600; letter-spacing:.03em; text-transform:uppercase; }
+  .suggest-block .pval{ font-family:'IBM Plex Mono'; font-size:30px; font-weight:700; color:#9A5F00; margin:4px 0 2px; }
+  .suggest-block .psub{ font-size:11.5px; color:#9A5F00; }
 
   .warn-block{
     margin-top:14px; padding:12px 14px; border-radius:10px;
-    background:var(--fee-tint); border:1px solid #EFC3AF; color:var(--fee);
+    background:var(--fee-tint); border:1px solid #F6C5BE; color:var(--fee);
     font-size:12.5px; text-align:center; font-weight:500;
   }
 
@@ -326,6 +329,64 @@
   footer.legal a{ color:var(--ink-soft); }
 
   ::selection{ background:var(--brand-tint); }
+
+  /* ================= Shopee orange theme ================= */
+  body{ background-color:var(--bg); }
+  .app{ padding-top:18px; }
+
+  .topbar{
+    border-bottom:none; padding:20px 24px; margin-bottom:20px;
+    border-radius:18px; color:#fff;
+    background:linear-gradient(120deg,#F53D2D 0%,#EE4D2D 45%,#FF7337 100%);
+    box-shadow:0 10px 28px rgba(238,77,45,0.28);
+    align-items:center; position:relative; overflow:hidden;
+  }
+  .topbar::after{
+    content:""; position:absolute; right:-60px; top:-80px; width:240px; height:240px; border-radius:50%;
+    background:radial-gradient(circle, rgba(255,255,255,0.22), rgba(255,255,255,0) 70%); pointer-events:none;
+  }
+  .brand-mark{ background:#fff; color:var(--brand); box-shadow:0 4px 10px rgba(120,30,10,0.25); }
+  .brand-text h1{ color:#fff; }
+  .brand-text p{ color:rgba(255,255,255,0.88); }
+  .topbar .rate-badge{
+    background:rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.4); color:#fff;
+    backdrop-filter:blur(4px); position:relative; z-index:1;
+  }
+  .topbar .update-badge{ background:rgba(255,255,255,0.95); color:var(--brand-dark); border-color:#fff; }
+  .topbar .update-badge b{ color:var(--brand-dark); }
+
+  .mode-toggle{ background:#fff; border:1px solid var(--line); box-shadow:var(--shadow); }
+  .mode-btn:hover{ color:var(--brand); }
+  .mode-btn.active{
+    background:linear-gradient(120deg,#EE4D2D,#FF6A3D); color:#fff;
+    box-shadow:0 6px 14px rgba(238,77,45,0.35);
+  }
+
+  .card{ border-color:var(--line); border-top:4px solid var(--brand); }
+  .group-title{ color:var(--brand-dark); }
+  .group-title::after{ background:linear-gradient(90deg,var(--line-strong),transparent); }
+  .group-header-toggle:hover .group-title{ color:var(--brand); }
+
+  .chip:hover{ border-color:var(--brand); color:var(--brand-dark); }
+  .chip.active{ background:var(--brand); border-color:var(--brand); color:#fff; box-shadow:0 4px 10px rgba(238,77,45,0.3); }
+  .switch.on{ background:var(--brand); }
+  input[type=range]{ accent-color:var(--brand); }
+
+  .receipt{ border-top:4px solid var(--brand); border-radius:6px 6px 2px 2px; }
+  .receipt-head .store{ color:var(--brand); letter-spacing:.06em; }
+  .rline.sum{ color:var(--ink); }
+  .rline.sum .rval{ color:var(--brand-dark); }
+  .fee-pct-tag{ background:var(--fee-tint); color:var(--fee); }
+  .fee-pct-tag.pct-neutral{ background:#F6F0EB; color:var(--ink-soft); }
+
+  .suggest-block{ background:linear-gradient(135deg,#FFF6DD,#FFEBC2); border-color:#FFD98A; }
+  .roas-chip{ background:var(--brand-tint); color:var(--brand-dark); border:1px solid #FFD3C6; }
+  .mkt-fixed-tag{ background:var(--brand-tint); color:var(--brand-dark); }
+
+  .group > .hint{ font-size:11px; color:var(--ink-faint); margin-top:6px; }
+  footer.legal{ color:var(--ink-faint); }
+  footer.legal a{ color:var(--brand-dark); }
+  ::selection{ background:#FFD3C6; }
 </style>
 </head>
 <body>
@@ -339,7 +400,10 @@
         <p>ดูกำไรจริงก่อนตั้งราคา — คำนวณค่าธรรมเนียมทุกรายการอัตโนมัติ</p>
       </div>
     </div>
-    <div class="rate-badge">อัตราค่าธรรมเนียมมีผล <b>4 ส.ค. 2569</b></div>
+    <div class="badge-stack">
+      <div class="rate-badge">อัตราค่าธรรมเนียมมีผล <b>4 ส.ค. 2569</b></div>
+      <div class="rate-badge update-badge">เว็บอัปเดตล่าสุด <b id="lastUpdated">27 ต.ค. 2569</b></div>
+    </div>
   </div>
 
   <div class="mode-toggle">
@@ -453,7 +517,7 @@
           <div class="switch" id="smallSwitch" onclick="toggleSmallSeller(this)"></div>
         </div>
         <div class="small-seller-extra" id="smallSellerExtra">
-          <span style="font-size:12px; color:#8A6412; white-space:nowrap;">ส่วนลด</span>
+          <span style="font-size:12px; color:#9A5F00; white-space:nowrap;">ส่วนลด</span>
           <input type="range" id="smallDiscountRange" min="0.5" max="1.5" step="0.1" value="1" oninput="onSmallRange()">
           <span class="val" id="smallDiscountVal">1.0%</span>
         </div>
@@ -934,6 +998,21 @@
   }
 
   calc();
+
+  // ---------- วันที่อัปเดตล่าสุด (อ้างอิงจาก commit ล่าสุดบน GitHub) ----------
+  (function loadLastUpdated(){
+    const el = document.getElementById('lastUpdated');
+    if(!el) return;
+    fetch('https://api.github.com/repos/tainiyom/shopee-calculator-/commits?per_page=1')
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(data => {
+        const iso = data && data[0] && data[0].commit && (data[0].commit.committer.date || data[0].commit.author.date);
+        if(!iso) return;
+        const d = new Date(iso);
+        el.textContent = d.toLocaleDateString('th-TH', {day:'numeric', month:'short', year:'numeric', timeZone:'Asia/Bangkok'});
+      })
+      .catch(() => {}); // ถ้าโหลดไม่ได้ จะแสดงวันที่ที่ระบุไว้ในไฟล์แทน
+  })();
 </script>
 </body>
 </html>
