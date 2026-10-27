@@ -828,7 +828,7 @@
         warn = true;
         price = 0;
       } else {
-        price = (txRate*ship + cost + pack + PLATFORM_FEE) / denom;
+        price = (txRate*ship + cost + ship + pack + PLATFORM_FEE) / denom;
       }
       document.getElementById('suggestBlock').style.display = warn ? 'none' : '';
       document.getElementById('rSuggestPrice').textContent = fmtBaht(price);
@@ -858,10 +858,10 @@
     const adsFee = price * adsRate;
     const totalMarketing = campaignFee + voucherFee + flashSaleFee + flashDynamicFee + exclusiveFee + affiliateFee + adsFee;
 
-    const grandTotalCost = totalFee + totalMarketing;
+    const grandTotalCost = cost + ship + pack + totalFee + totalMarketing;
     const grandTotalPct = price > 0 ? grandTotalCost/price : 0;
 
-    const profit = price - cost - pack - totalFee - totalMarketing;
+    const profit = price - grandTotalCost;
     const margin = price > 0 ? profit / price : 0;
 
     document.getElementById('rPrice').textContent = fmtBaht(price);
