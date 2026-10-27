@@ -588,8 +588,7 @@
 
           <div class="dashed"></div>
 
-          <div class="rline sum"><span class="rlabel">รวมค่าธรรมเนียม Shopee<span class="fee-pct-tag" id="rTotalFeePct">0.00%</span></span><span class="rval mono" id="rTotalFee">฿0.00</span></div>
-          <div class="rline"><span class="rlabel">เงินรับสุทธิจาก Shopee<span class="fee-pct-tag pct-neutral" id="rNetPct">0.00%</span></span><span class="rval mono" id="rNetReceive">฿0.00</span></div>
+          <div class="rline sum"><span class="rlabel">รวมค่าธรรมเนียมพื้นฐาน<span class="fee-pct-tag" id="rTotalFeePct">0.00%</span></span><span class="rval mono" id="rTotalFee">฿0.00</span></div>
 
           <div id="marketingReceiptBlock" style="display:none;">
             <div class="dashed"></div>
@@ -850,7 +849,6 @@
     const txFee = (price + ship) * txRate;
     const serviceFee = price * serviceRate;
     const totalFee = commFee + txFee + serviceFee + PLATFORM_FEE;
-    const netReceive = price + ship - totalFee;
 
     const campaignFee = price * campaignRate;
     const voucherFee = price * voucherRate;
@@ -874,7 +872,6 @@
     document.getElementById('rService').textContent = fmtBaht(serviceFee);
     document.getElementById('rPlatform').textContent = fmtBaht(PLATFORM_FEE);
     document.getElementById('rTotalFee').textContent = fmtBaht(totalFee);
-    document.getElementById('rNetReceive').textContent = fmtBaht(netReceive);
 
     // marketing receipt lines
     document.getElementById('marketingReceiptBlock').style.display = anyMarketing ? '' : 'none';
@@ -922,7 +919,6 @@
     document.getElementById('rPricePct').textContent = fmtPct(price > 0 ? 1 : 0);
     document.getElementById('rShipPct').textContent = fmtPct(pOf(ship));
     document.getElementById('rTotalFeePct').textContent = fmtPct(pOf(totalFee));
-    document.getElementById('rNetPct').textContent = fmtPct(pOf(netReceive));
     document.getElementById('rTotalMktPct').textContent = fmtPct(pOf(totalMarketing));
     document.getElementById('rCost').textContent = fmtBaht(cost);
     document.getElementById('rCostPct').textContent = fmtPct(price > 0 ? cost/price : 0);
