@@ -499,13 +499,7 @@
       <div class="group">
         <div class="group-title">โปรแกรมร้านค้าที่เข้าร่วม</div>
         <div class="switch-row">
-          <div class="switch-label">PRIME Seller
-            <span class="sub">ลดค่าคอมมิชชั่น แลกกับค่าธรรมเนียมโปรแกรม</span>
-          </div>
-          <div class="switch" id="primeSwitch" onclick="toggleSwitch(this, calc)"></div>
-        </div>
-        <div class="switch-row">
-          <div class="switch-label">ร้านโค้ดคุ้ม / Xtra
+          <div class="switch-label">Prime Seller (ส่งฟรี/โค้ดส่วนลด)
             <span class="sub">เสีย Service Fee เพิ่ม เพื่อแจกโค้ดส่งฟรี/ส่วนลด</span>
           </div>
           <div class="switch" id="xtraSwitch" onclick="toggleSwitch(this, calc)"></div>
@@ -647,7 +641,7 @@
           <div class="rline deduct"><span class="rlabel">ค่า Commission<span class="fee-pct-tag" id="rCommRate">0%</span></span><span class="rval mono" id="rComm">฿0.00</span></div>
           <div class="rline deduct"><span class="rlabel">Transaction Fee<span class="fee-pct-tag" id="rTxRate">0%</span></span><span class="rval mono" id="rTx">฿0.00</span></div>
           <div class="rsub" id="rTxNote"></div>
-          <div class="rline deduct" id="rServiceRow"><span class="rlabel">Service Fee (Xtra)<span class="fee-pct-tag" id="rServiceRate">0%</span></span><span class="rval mono" id="rService">฿0.00</span></div>
+          <div class="rline deduct" id="rServiceRow"><span class="rlabel">Service Fee (Prime Seller)<span class="fee-pct-tag" id="rServiceRate">0%</span></span><span class="rval mono" id="rService">฿0.00</span></div>
           <div class="rline deduct"><span class="rlabel">ค่าธรรมเนียมโครงสร้างพื้นฐานแพลตฟอร์ม</span><span class="rval mono" id="rPlatform">฿1.07</span></div>
 
           <div class="dashed"></div>
@@ -835,14 +829,12 @@
     const cat = CATEGORIES[catSelect.value];
     const pay = PAYMENT_METHODS[paySelect.value];
 
-    const isPrime = document.getElementById('primeSwitch').classList.contains('on');
     const isXtra = document.getElementById('xtraSwitch').classList.contains('on');
     const isSmall = document.getElementById('smallSwitch').classList.contains('on');
     const smallDiscount = isSmall ? parseFloat(document.getElementById('smallDiscountRange').value)/100 : 0;
 
     const baseCommRate = isMall ? cat.mall : cat.nonmall;
-    const primeDiscount = isPrime ? cat.prime : 0;
-    const commRate = Math.max(baseCommRate - primeDiscount - smallDiscount, 0);
+    const commRate = Math.max(baseCommRate - smallDiscount, 0);
     const txRate = pay.rate;
     const serviceRate = isXtra ? cat.service : 0;
 
