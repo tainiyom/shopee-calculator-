@@ -601,6 +601,10 @@
           <div class="rline sum" style="font-size:14px;"><span class="rlabel">รวมค่าใช้จ่ายทั้งหมด</span><span class="rval mono" id="rGrandTotal">฿0.00</span></div>
           <div class="rline"><span class="rlabel">คิดเป็น % ของราคาขาย</span><span class="rval mono" id="rGrandTotalPct">0.00%</span></div>
 
+          <div class="dashed"></div>
+          <div class="rline deduct"><span class="rlabel">ต้นทุนสินค้า<span class="fee-pct-tag" id="rCostPct">0%</span></span><span class="rval mono" id="rCost">฿0.00</span></div>
+          <div class="rline deduct"><span class="rlabel">ค่าแพ็ค/ดำเนินการอื่นๆ<span class="fee-pct-tag" id="rPackPct">0%</span></span><span class="rval mono" id="rPack">฿0.00</span></div>
+
           <div class="profit-block" id="profitBlock">
             <div class="plabel">กำไรสุทธิต่อชิ้น</div>
             <div class="pval" id="rProfit">฿0.00</div>
@@ -909,6 +913,10 @@
     document.getElementById('rTotalMarketing').textContent = fmtBaht(totalMarketing);
     document.getElementById('rGrandTotal').textContent = fmtBaht(grandTotalCost);
     document.getElementById('rGrandTotalPct').textContent = fmtPct(grandTotalPct);
+    document.getElementById('rCost').textContent = fmtBaht(cost);
+    document.getElementById('rCostPct').textContent = fmtPct(price > 0 ? cost/price : 0);
+    document.getElementById('rPack').textContent = fmtBaht(pack);
+    document.getElementById('rPackPct').textContent = fmtPct(price > 0 ? pack/price : 0);
 
     const profitEl = document.getElementById('rProfit');
     profitEl.textContent = fmtBaht(profit);
