@@ -269,6 +269,8 @@
   }
 
   .fee-pct-tag.pct-neutral{ background:#EEF1EB; color:var(--ink-soft); }
+  .rsub{ font-size:10.5px; color:var(--ink-faint); text-align:right; margin:-2px 0 2px; }
+  .rsub:empty{ display:none; }
   .rpct-note{ font-size:10.5px; color:var(--ink-faint); text-align:right; margin-top:2px; }
 
   .profit-block{
@@ -574,14 +576,15 @@
           <div class="rline deduct"><span class="rlabel">ต้นทุนสินค้า<span class="fee-pct-tag" id="rCostPct">0.00%</span></span><span class="rval mono" id="rCost">฿0.00</span></div>
           <div class="rline deduct"><span class="rlabel">ค่าจัดส่ง (ลูกค้าจ่าย)<span class="fee-pct-tag" id="rShipPct">0.00%</span></span><span class="rval mono" id="rShip">฿0.00</span></div>
           <div class="rline deduct"><span class="rlabel">ค่าแพ็ค/ดำเนินการอื่นๆ<span class="fee-pct-tag" id="rPackPct">0.00%</span></span><span class="rval mono" id="rPack">฿0.00</span></div>
-          <div class="rpct-note">% ในใบสรุป = สัดส่วนเทียบกับราคาขาย</div>
+          <div class="rpct-note">% ในใบสรุป = สัดส่วนเทียบกับราคาขาย (ยกเว้น Transaction Fee ที่แสดงอัตราจริงของ Shopee)</div>
 
           <div class="dashed"></div>
 
           <div class="rline deduct"><span class="rlabel">ค่า Commission<span class="fee-pct-tag" id="rCommRate">0%</span></span><span class="rval mono" id="rComm">฿0.00</span></div>
           <div class="rline deduct"><span class="rlabel">Transaction Fee<span class="fee-pct-tag" id="rTxRate">0%</span></span><span class="rval mono" id="rTx">฿0.00</span></div>
+          <div class="rsub" id="rTxNote"></div>
           <div class="rline deduct" id="rServiceRow"><span class="rlabel">Service Fee (Xtra)<span class="fee-pct-tag" id="rServiceRate">0%</span></span><span class="rval mono" id="rService">฿0.00</span></div>
-          <div class="rline deduct"><span class="rlabel">Platform Fee<span class="fee-pct-tag" id="rPlatformPct">0.00%</span></span><span class="rval mono" id="rPlatform">฿1.07</span></div>
+          <div class="rline deduct"><span class="rlabel">ค่าธรรมเนียมโครงสร้างพื้นฐานแพลตฟอร์ม</span><span class="rval mono" id="rPlatform">฿1.07</span></div>
 
           <div class="dashed"></div>
 
@@ -914,10 +917,10 @@
     document.getElementById('rGrandTotal').textContent = fmtBaht(grandTotalCost);
     document.getElementById('rGrandPct2').textContent = fmtPct(grandTotalPct);
     const pOf = v => price > 0 ? v/price : 0;
-    document.getElementById('rTxRate').textContent = fmtPct(pOf(txFee));
+    document.getElementById('rTxRate').textContent = fmtPct(txRate);
+    document.getElementById('rTxNote').textContent = 'คิดจาก (ราคา + ค่าส่ง) ' + fmtBaht(price + ship) + ' = ' + fmtPct(pOf(txFee)) + ' ของราคาขาย';
     document.getElementById('rPricePct').textContent = fmtPct(price > 0 ? 1 : 0);
     document.getElementById('rShipPct').textContent = fmtPct(pOf(ship));
-    document.getElementById('rPlatformPct').textContent = fmtPct(pOf(PLATFORM_FEE));
     document.getElementById('rTotalFeePct').textContent = fmtPct(pOf(totalFee));
     document.getElementById('rNetPct').textContent = fmtPct(pOf(netReceive));
     document.getElementById('rTotalMktPct').textContent = fmtPct(pOf(totalMarketing));
